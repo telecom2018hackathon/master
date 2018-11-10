@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time 
 from multiprocessing import Process
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 
+pd.options.display.float_format = '${:,.4f}'.format
 
 # ------------------------------------------------
 # -                   TOM                        -
@@ -28,7 +31,7 @@ def label_to_data_series():
     return pd.DataFrame(np.array([tuple(labels)]).T, columns = ['LABELS'])
 
 
-path_training_dataset = '/home/cloud/hackathon/training_dataset'
+path_training_dataset = '/home/cloud/hackathon/validation_dataset/validation_'
 
 # ------------------------------------------------
 # -                   JACKY                      -
@@ -39,9 +42,9 @@ path_training_dataset = '/home/cloud/hackathon/training_dataset'
 
 def index_to_path(index, typ):
     if typ == 'behavior' :
-        return path_training_dataset + '/training_' + index + '_' + typ + '_sequence.txt'
+        return path_training_dataset + index + '_' + typ + '_sequence.txt'
     elif typ == 'process' :
-        return path_training_dataset + '/training_' + index + '_' + typ + '_generation.txt'
+        return path_training_dataset + index + '_' + typ + '_generation.txt'
 
 
 def training_files_to_list(path):
@@ -111,7 +114,7 @@ def process_metrics(index):
 
 
 
-
+# ------------- TRAINING SET ---------------------------------
 
 # X creation
 def thread_run(start, stop, threadNumber):
@@ -125,31 +128,69 @@ def thread_run(start, stop, threadNumber):
             l.append([index] + behavior_metrics(index) + process_metrics(index))
         except :
             errorCount += 1
-    pd.DataFrame(l).to_csv('./X_'+ str(threadNumber) + '_V2.csv')
+    pd.DataFrame(l).to_csv('./Val_'+ str(threadNumber) + '.csv')
 
 
 def launch_processes() :
     for i in range(40):
-        p = Process(target = thread_run, args = (i*5000, (i+1)*5000, i))
+        p = Process(target = thread_run, args = (i*1000, (i+1)*1000, i))
         p.start()
 
 def concat_csv():
     df = pd.DataFrame()
     for i in range(40) :
-        temp = pd.read_csv('./X_' + str(i) + '_V2.csv', header = 0, index_col = 0)
-        temp.reindex(temp.index.values + i*5000)
+        temp = pd.read_csv('./Val_' + str(i) + '.csv', header = 0, index_col = 0)
+        temp.reindex(temp.index.values + i*1000)
         df = pd.concat([df,temp], ignore_index = True)
     df.columns = ['Index', 'Behavior_lenght', 'Behavior_dist_RPI', 'Behavior_dist_API', 'Process_length', 'Process_dist' ]
     df.set_index('Index', inplace=True)
-    df.to_csv('./XFinal_V1.csv')
+    df.to_csv('./Val.csv')
 
 def labelisation():
     labels = label_to_data_series()
-    data = pd.read_csv('./XFinal_V1.csv', index_col = 0, header = 0)
+    data = pd.read_csv('./Val.csv', index_col = 0, header = 0)
     data = pd.merge(data, labels, left_index=True, right_index=True)
-    data.to_csv('./XY.csv')
+    data.to_csv('./Validation_XY.csv')
 
-labelisation()
+
+# ------------- VALIDATION SET ---------------------------------
+
+concat_csv()
+
+
+
+
+def OLS():
+    data = pd.read_csv('./XY.csv', header = 0, index_col = 0)
+    X = data[['Behavior_lenght', 'Behavior_dist_RPI', 'Behavior_dist_API', 'Process_length', 'Process_dist']]
+    Y = data['LABELS']
+    reg = LogisticRegression(fit_intercept=True)
+    reg.fit(X, Y)
+    R2 = reg.score(X,Y)
+    coef = reg.coef_
+
+    Val = pd.read_csv('./Val.csv', header = 0, index_col = 0)
+
+    (Val @ coef.T).plot()
+    plt.show()
+
+def decisionTreeClass():
+    data = pd.read_csv('./XY.csv', header = 0, index_col = 0)
+    X = data[['Behavior_lenght', 'Behavior_dist_RPI', 'Behavior_dist_API', 'Process_length', 'Process_dist']]
+    Y = data['LABELS']
+    clf = DecisionTreeClassifier(random_state=0)
+    clf.fit(X, Y)
+
+    Val = pd.read_csv('./Val.csv', header = 0, index_col = 0)
+    Val = Val.reindex(range(40000), fill_value = 0)
+    
+    pd.DataFrame(clf.predict_proba(Val))[1].to_csv('answer.txt', index = False, float_format='%.4f')
+
+
+decisionTreeClass()
+
+
+
 
 
 
