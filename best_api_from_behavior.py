@@ -8,6 +8,9 @@ def get_best_api_from_behavior(index):
     """
 This fonction get the index as argument and return a dataframe with the id of the API in the first column and the number of occurence in the second column sorted by the number descending.
 
+    Variable : Index
+
+    Return : DataFrame with the API number as the first column sorted by the number of occurence of the API in descending order
 
     """
 
@@ -21,3 +24,4 @@ This fonction get the index as argument and return a dataframe with the id of th
     behavior_sorted =  behavior_sorted.reset_index(level = 'API')
     behavior_sorted['API'] = behavior_sorted['API'].replace({r'api_':''}, regex = True)
     return behavior_sorted 
+ 
