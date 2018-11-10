@@ -1,10 +1,9 @@
 ## Récupération de la liste de fichiers en fonction de l'extension
 
-path = "~/hackathon/training_dataset"
+path = "/home/jacky/test"
 import glob
 import re
 import os
-
 
 def training_files_to_list(path):
     """Create a dict with paths and key in key. 
@@ -26,7 +25,8 @@ def training_files_to_list(path):
                          for elmt in filenames_proc}
     
 
-def path_from_index(index,dico,file):
+dico = training_files_to_list(path)
+def path_from_index(index,file):
     
     """return the path given index number and file type (process or behavior)
     
