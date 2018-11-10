@@ -15,19 +15,18 @@ def training_files_to_list(path):
     Return :
         L = [(XXXXXX,process_path,behavior_path)]   
         """
-    os.chdir(path)
-    
-    filenames_proc = glob.glob('*_process_generation.txt')
+
+    filenames_proc = glob.glob(f'{path}/*_process_generation.txt')
 
     re_index = r"(\d+)"
     
     return {re.findall(re_index,elmt)[0]:
-                         [path + "/" + elmt,
-                         path + "/" + re.sub('process_generation','behavior_sequence', elmt)] 
+                         [elmt,
+                         re.sub('process_generation','behavior_sequence', elmt)] 
                          for elmt in filenames_proc}
     
 
-def path_from_index(index,file,dico):
+def path_from_index(index,dico,file):
     
     """return the path given index number and file type (process or behavior)
     
