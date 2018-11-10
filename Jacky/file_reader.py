@@ -27,17 +27,26 @@ def training_files_to_list(path):
     return f
     
 
-dico = training_files_to_list(path)
+list_path = training_files_to_list(path)
     
-def to_pandas(list_path):
-    t= time.time()
-    """return a dataset of the files in the dico"""
-    l = [[elmt[0],file_read(elmt[1]).split("\n"),file_read(elmt[2]).split("\n")] for elmt in list_path]
-    
-    print(t-time.time())
-    df = pd.DataFrame(l,columns = ["index","behavior","process"])
+def to_pandas():
+    list_path = training_files_to_list(path)
+    n = len(list_path)//20
+    df_l = []
+    for i in range(20):
+        u = list_path[i*n:(i+1)*n]
+        g = [[elmt[0],file_read(elmt[1]).split("\n"),file_read(elmt[2]).split("\n")] for elmt in u]
+        print(i/21*100)
+        df = pd.DataFrame(g,columns = ["index","behavior","process"])
+        df = df.set_index("index")
+        df_l.append(df)
+    u = list_path[(20)*n:]
+    g = [[elmt[0],file_read(elmt[1]).split("\n"),file_read(elmt[2]).split("\n")] for elmt in u]
+    print(100)
+    df = pd.DataFrame(g,columns = ["index","behavior","process"])
     df = df.set_index("index")
-    return df
+    df_l.append(df)
+    return pd.concat(df_l)
     
  
 def file_read(file_path):
