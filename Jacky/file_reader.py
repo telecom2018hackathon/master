@@ -7,7 +7,7 @@ import os
 
 
 def training_files_to_list(path):
-    """Create a list of tuples representing the files ordered by index. 
+    """Create a dict with paths and key in key. 
     
     Variables :
         Path : location of the files
@@ -18,12 +18,31 @@ def training_files_to_list(path):
     os.chdir(path)
     
     filenames_proc = glob.glob('*_process_generation.txt')
-    print(filenames_proc)
+
     re_index = r"(\d+)"
-    return [(re.findall(re_index,elmt)[0],
-                         path + "/" + elmt,
-                         path + "/" + re.sub('process_generation','behavior_sequence', elmt)) 
-            for elmt in filenames_proc]
+    
+    return {re.findall(re_index,elmt)[0]:
+                         [path + "/" + elmt,
+                         path + "/" + re.sub('process_generation','behavior_sequence', elmt)] 
+                         for elmt in filenames_proc}
     
 
-
+def path_from_index(index,file,dico):
+    
+    """return the path given index number and file type (process or behavior)
+    
+    index : str
+    file : string : behavior or process
+    dico : dictionnaire avec indexes """
+    
+    
+    if file == "behavior":
+        return dico[str(index)][1]
+    
+    if file == "process":
+        return dico[str(index)][0]
+    
+    else:
+        return None
+    
+    
