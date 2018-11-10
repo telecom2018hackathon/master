@@ -36,7 +36,7 @@ def to_pandas():
     for i in range(20):
         u = list_path[i*n:(i+1)*n]
         g = [[elmt[0],file_read(elmt[1]).split("\n"),file_read(elmt[2]).split("\n")] for elmt in u]
-        print(i/21*100)
+        print(round(i/21*100))
         df = pd.DataFrame(g,columns = ["index","behavior","process"])
         df = df.set_index("index")
         df_l.append(df)
